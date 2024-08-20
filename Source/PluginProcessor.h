@@ -18,11 +18,12 @@ public:
     enum class DistortionType
     {
         SoftClipping,
+        HardClipping,
         Rectifier,
     };
 
     Distortion()
-        : currentType(DistortionType::Rectifier), gain(2.0f)
+        : currentType(DistortionType::SoftClipping), gain(2.0f)
     {
     }
 
@@ -59,6 +60,8 @@ public:
                 currentType = DistortionType::SoftClipping;
             case 1:
                 currentType = DistortionType::Rectifier;
+            case 2:
+                currentType = DistortionType::HardClipping;
             default:
                 currentType = DistortionType::SoftClipping;
         }
@@ -67,6 +70,7 @@ public:
 private:
     DistortionType currentType;
     float gain;
+    float skew;
 
     float softClipping(float sample)
     {
@@ -76,6 +80,26 @@ private:
     float rectifier(float sample)
     {
       return pow(std::tanh(sample * gain), 6);
+    }
+
+    float hardClipping(float sample)
+    {
+        float processedSample  = 0.0f;
+
+        if (sample < 1.0f / skew && sample > -1.0f / skew)
+        {
+            processedSample = sample * skew;
+        }
+        else if (sample <= -1.0f / skew)
+        {
+            processedSample = -1.0f;
+        }
+        else if (sample >= 1.0f / skew)
+        {
+            processedSample = 1.0f;
+        }
+
+        return processedSample;
     }
 };
 

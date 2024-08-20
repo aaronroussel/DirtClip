@@ -132,14 +132,14 @@ void DirtClipAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, juc
     {
         params.smoothen();
 
-        float dryL = channelDataL[sample];
-        float dryR = channelDataR[sample];
+        float dryL = channelDataL[sample] * params.gain;
+        float dryR = channelDataR[sample] * params.gain;
 
         float wetL = distortion.processSample(channelDataL[sample] * params.gain);
-        float werR = distortion.processSample(channelDataR[sample] * params.gain);
+        float wetR = distortion.processSample(channelDataR[sample] * params.gain);
 
         float mixL = dryL + wetL * params.mix;
-        float mixR = dryL + wetL * params.mix;
+        float mixR = dryR + wetR * params.mix;
 
         channelDataL[sample] = mixL;
         channelDataR[sample] = mixR;
@@ -199,7 +199,8 @@ juce::AudioProcessorValueTreeState::ParameterLayout
         gainParamID,
         "Output Gain",
         juce::NormalisableRange<float> { -12.0f, 12.0f },
-        0.0f));
+        0.0f
+    ));
 
 
     layout.add(std::make_unique<juce::AudioParameterFloat>(
@@ -209,6 +210,23 @@ juce::AudioProcessorValueTreeState::ParameterLayout
         100.0f,
         juce::AudioParameterFloatAttributes().withStringFromValueFunction(stringFromPercent)
     ));
+
+    layout.add(std::make_unique<juce::AudioParameterFloat>(
+        distortionSkewParamID,
+        "Distortion Skew",
+        juce::NormalisableRange<float>{1.0f, 4.0f},
+        1.0f
+    ));
+
+    layout.add(std::make_unique<juce::AudioParameterInt>(
+        distortionParamID,        // Parameter ID
+        "Distortion Mode",        // Parameter Name
+        0,                        // Minimum value
+        2,                        // Maximum value
+        1                         // Default value
+        // The optional parameters like Label, stringFromInt, and intFromString can be omitted or provided as needed
+    ));
+
 
     return layout;
 }
