@@ -138,8 +138,8 @@ void DirtClipAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, juc
         float wetL = distortion.processSample(channelDataL[sample] * params.gain);
         float wetR = distortion.processSample(channelDataR[sample] * params.gain);
 
-        float mixL = dryL + wetL * params.mix;
-        float mixR = dryR + wetR * params.mix;
+        float mixL = dryL * (1.0f - params.mix) + wetL * params.mix;
+        float mixR = dryR * (1.0f - params.mix) + wetR * params.mix;
 
         channelDataL[sample] = mixL;
         channelDataR[sample] = mixR;
